@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "mysql");
+$conn = new mysqli("localhost", "root", "", "projet", 4306);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -7,7 +7,7 @@ if ($conn->connect_error) {
 
 $cin = intval($_GET['cin'] ?? 0);
 
-// Handle form submission
+// Traitement du formulaire (méthode POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['nomprenom']);
     $email = trim($_POST['email']);
@@ -30,18 +30,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 }
 
-// Load coach data
+// Charger les données du coach
 $sql = "SELECT * FROM coach WHERE cin = ?";
 $stmt = $conn->prepare($sql);
+
+// Vérifier si la préparation de la requête a échoué
+if ($stmt === false) {
+    die("Erreur de préparation de la requête : " . $conn->error);
+}
+
 $stmt->bind_param("i", $cin);
 $stmt->execute();
 $result = $stmt->get_result();
-$coach = $result->fetch_assoc();
+
+// Vérifier si des résultats ont été obtenus
+if ($result->num_rows > 0) {
+    $coach = $result->fetch_assoc();
+} else {
+    echo "Aucun coach trouvé avec ce CIN.";
+}
+
 $stmt->close();
 $conn->close();
+
+
 ?>
 
-<!-- Simple form (You can reuse your styled form here) -->
+<!-- Affichage du formulaire HTML -->
 <h2>Edit Coach</h2>
 <form method="post">
     <input type="text" name="nomprenom" value="<?= $coach['nomprenom'] ?>" required><br>

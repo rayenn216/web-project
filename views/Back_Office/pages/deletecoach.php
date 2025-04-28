@@ -1,10 +1,11 @@
 <?php
 // DB connection
-$conn = new mysqli("localhost", "root", "", "mysql");
+$conn = new mysqli("localhost", "root", "", "mysql", 4306);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 
 // Check if cin is set
 if (!isset($_GET['cin'])) {

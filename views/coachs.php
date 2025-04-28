@@ -249,9 +249,9 @@ foreach($listeCoach as $row){
                             <p>EXPERIENCE:  <?PHP echo $row['experience']; ?>ANS</p>
 							<p>AGE:  <?PHP echo $row['age']; ?>ANS</p>
 							<p>SALAIRE:  <?PHP echo $row['salaire']; ?>DT</p>
-
-
-                            
+							<button class="btn btn-primary show-disponibilite" data-cin="<?PHP echo $row['cin']; ?>" data-nom="<?PHP echo $row['nomprenom']; ?>">
+								<i class="fa fa-calendar"></i> Voir disponibilités
+							</button>
                         </div>
 				</div>
 			</div>
@@ -270,11 +270,47 @@ foreach($listeCoach as $row){
 </section>
 <!--/ Main container end -->
 
+<!-- Modal pour afficher les disponibilités -->
+<div class="modal fade" id="disponibiliteModal" tabindex="-1" role="dialog" aria-labelledby="disponibiliteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-primary">
+        <h5 class="modal-title text-white" id="disponibiliteModalLabel">Disponibilités du coach</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="disponibilite-loader" class="text-center">
+          <i class="fa fa-spinner fa-spin fa-3x"></i>
+          <p>Chargement des disponibilités...</p>
+        </div>
+        <div id="disponibilite-content" style="display: none;">
+          <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+              <tr>
+                <th>Jour</th>
+                <th>Heure de début</th>
+                <th>Heure de fin</th>
+              </tr>
+            </thead>
+            <tbody id="disponibilite-table-body">
+              <!-- Les disponibilités seront insérées ici via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <div id="no-disponibilite" class="alert alert-info" style="display: none;">
+          <i class="fa fa-info-circle"></i> Ce coach n'a pas encore de disponibilités enregistrées.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-
-	<!-- Footer start -->
-	
-
+<!-- Footer start -->
 
 	<!-- Copyright start -->
 	<section id="copyright" class="copyright angle">
@@ -359,6 +395,68 @@ foreach($listeCoach as $row){
 
 <!-- Main Script -->
 <script src="js/script.js"></script>
+
+<!-- Script pour gérer l'affichage des disponibilités des coachs -->
+<script>
+$(document).ready(function() {
+  // Événement au clic sur le bouton "Voir disponibilités"
+  $('.show-disponibilite').on('click', function() {
+    const coachCin = $(this).data('cin');
+    const coachNom = $(this).data('nom');
+    
+    // Mise à jour du titre de la modale
+    $('#disponibiliteModalLabel').text(`Disponibilités du coach ${coachNom}`);
+    
+    // Affichage de la modale
+    $('#disponibiliteModal').modal('show');
+    
+    // Afficher le loader, cacher le contenu et le message "pas de disponibilité"
+    $('#disponibilite-loader').show();
+    $('#disponibilite-content').hide();
+    $('#no-disponibilite').hide();
+    
+    // Requête AJAX pour récupérer les disponibilités
+    $.ajax({
+      url: 'get_disponibilites.php',
+      method: 'GET',
+      data: { cin: coachCin },
+      dataType: 'json',
+      success: function(response) {
+        // Cacher le loader
+        $('#disponibilite-loader').hide();
+        
+        // Si la requête a réussi et qu'il y a des disponibilités
+        if (response.success && response.disponibilites && response.disponibilites.length > 0) {
+          // Vider le contenu du tableau
+          $('#disponibilite-table-body').empty();
+          
+          // Ajouter chaque disponibilité au tableau
+          $.each(response.disponibilites, function(i, disponibilite) {
+            const row = `<tr>
+              <td><span class="badge badge-pill badge-primary">${disponibilite.jour}</span></td>
+              <td>${disponibilite.heureDebut}</td>
+              <td>${disponibilite.heureFin}</td>
+            </tr>`;
+            $('#disponibilite-table-body').append(row);
+          });
+          
+          // Afficher le contenu
+          $('#disponibilite-content').show();
+        } else {
+          // Si pas de disponibilités, afficher le message
+          $('#no-disponibilite').show();
+        }
+      },
+      error: function(xhr, status, error) {
+        // En cas d'erreur, afficher le message
+        $('#disponibilite-loader').hide();
+        $('#no-disponibilite').text('Erreur lors du chargement des disponibilités.').show();
+        console.error('Erreur AJAX:', error);
+      }
+    });
+  });
+});
+</script>
 
 </body>
 

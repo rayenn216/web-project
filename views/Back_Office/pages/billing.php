@@ -177,13 +177,14 @@
             
             <?php
             // Connexion à la base de données
-            $servername = "127.0.0.1";
+            $servername = "127.0.0.1"; // Ou "localhost"
             $username = "root";
             $password = "";
-            $dbname = "mysql";
-
+            $dbname = "projet";
+            $port = 4306; // Ajout du port !
+            
             // Créer la connexion
-            $conn = new mysqli($servername, $username, $password, $dbname);
+            $conn = new mysqli($servername, $username, $password, $dbname, $port);
 
             // Vérifier la connexion
             if ($conn->connect_error) {
@@ -318,12 +319,13 @@
         </div>
         <?php
 // Connexion à la base de données
-$conn = new mysqli("127.0.0.1", "root", "", "mysql");
+$conn = new mysqli("127.0.0.1", "root", "", "projet", 4306);
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Suppression d’un coach si demandé
+// Suppression d'un coach si demandé
 if (isset($_GET['delete'])) {
     $idToDelete = intval($_GET['delete']);
     $conn->query("DELETE FROM coach WHERE id = $idToDelete");
@@ -361,8 +363,8 @@ if ($result->num_rows > 0) {
                 <td>' . $row['salaire'] . '</td>
                 <td>' . $row['date'] . '</td>
                 <td>
-<a href="edit_coach.php?cin=' . $row['cin'] . '" class="btn btn-sm btn-primary">Edit</a>
-                    
+                    <a href="detailcoach.php?cin=' . $row['cin'] . '" class="btn btn-sm btn-info">Details</a>
+                    <a href="edit_coach.php?cin=' . $row['cin'] . '" class="btn btn-sm btn-primary">Edit</a>
                     <a href="deletecoach.php?cin=' . $row['cin'] . '" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure?\')">Delete</a>
                 </td>
               </tr>';
